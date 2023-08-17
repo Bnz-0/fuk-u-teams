@@ -1,0 +1,118 @@
+// ==UserScript==
+// @name        fuk u teams
+// @version     2
+// @description Script for keeping status perpetually in Web version of Teams
+// @grant       none
+// @match       *://*.teams.microsoft.com/*
+// @author      Bnz-0, tetroxid (https://www.reddit.com/user/tetroxid/)
+// ==/UserScript==
+
+const selectorId = "FUK_U_TEAMS_SELECTOR";
+let forcedAvailability = "";
+let isScriptLoaded = false;
+
+
+// Show the note when people message you
+function pinned(s) {
+    return s + "<pinnednote></pinnednote>"
+}
+
+const statusMap = {
+    "Script Off": {"availability":"", "note": ""},
+    "Available": {"availability":"Available", "note": ""},
+    "Busy": {"availability":"Busy", "note": ""},
+    "DoNotDisturb": {"availability":"DoNotDisturb", "note": ""},
+    "BeRightBack": {"availability":"BeRightBack", "note": ""},
+    "Away": {"availability":"Away", "note": ""},
+    "Offline": {"availability":"Offline", "note": ""}
+};
+
+function getAuthToken() {
+    for(const i in localStorage) {
+        if(i.startsWith("ts.") && i.endsWith("cache.token.https://presence.teams.microsoft.com/")) {
+            return JSON.parse(localStorage[i]).token;
+        }
+    }
+}
+
+function forceStatus() {
+    if(!forcedAvailability) return;
+    console.log(`fuk u teams, I'm ${forcedAvailability}`);
+    fetch("https://presence.teams.microsoft.com/v1/me/forceavailability/", {
+        "headers": {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${getAuthToken()}`
+        },
+        "body": `{"availability":"${forcedAvailability}"}`,
+        "method": "PUT"
+    })
+    .then((resp) => console.log(`(forceStatus) Got fuked: ${resp.status}`))
+    .catch((err) => console.error("Unable to set the new status:", err));
+}
+
+function resetStatus() {
+    console.log(`reset status`);
+    fetch("https://presence.teams.microsoft.com/v1/me/forceavailability/", {
+        "headers": {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${getAuthToken()}`
+        },
+        "method": "PUT"
+    })
+    .then((resp) => console.log(`(resetStatus): ${resp.status}`))
+    .catch((err) => console.error("Unable to reset the status:", err));
+}
+
+function checkIfSelectorChanged() {
+    // the teams security policy do not permit the usage of custom code in "onchange" event
+    let node = document.getElementById(selectorId);
+    let newStatus = statusMap[node.value];
+    if(newStatus && newStatus.availability != forcedAvailability) {
+        publishNote(newStatus.note);
+        forcedAvailability = newStatus.availability;
+        if(forcedAvailability) {
+            forceStatus();
+        } else {
+            resetStatus();
+        }
+    }
+}
+
+function createSelector() {
+    let node = document.createElement("div");
+    node.style.position = 'absolute';
+    node.style.top = '15px';
+    node.style.right = '100px';
+    node.style.zIndex = '999999';
+
+    let options = "";
+    for(let status in statusMap){
+        options += `<option value="${status}">${status}</option>`;
+    }
+    node.innerHTML = `
+    <select id="${selectorId}" style="color: black;">
+        ${options}
+    </select>`;
+    document.body.appendChild(node);
+}
+
+function publishNote(note) {
+    console.log(`fuk u teams, tells the others "${note}"`);
+    fetch("https://presence.teams.microsoft.com/v1/me/publishnote", {
+        "headers": {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${getAuthToken()}`
+        },
+        "body": `{"message": "${note}", "expiry": "9999-12-30T23:00:00.000Z"}`,
+        "method": "PUT"
+    })
+    .then((resp) => console.log(`(publishNote) Got fuked: ${resp.status}`))
+    .catch((err) => console.error("Unable to publish the new note:", err));
+}
+
+if(!isScriptLoaded) {
+    createSelector();
+    setInterval(checkIfSelectorChanged, 1000); // 1s
+    setInterval(forceStatus, 15*1000); // 15s
+    isScriptLoaded = true;
+}
