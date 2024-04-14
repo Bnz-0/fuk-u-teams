@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name        fuk u teams
-// @version     2
+// @version     3
 // @description Script for keeping status perpetually in Web version of Teams
+// @run-at      document-start
 // @grant       none
 // @match       *://*.teams.microsoft.com/*
 // @author      Bnz-0, tetroxid (https://www.reddit.com/user/tetroxid/)
@@ -93,7 +94,7 @@ function createSelector() {
     <select id="${selectorId}" style="color: black;">
         ${options}
     </select>`;
-    document.body.appendChild(node);
+    return node;
 }
 
 function publishNote(note) {
@@ -110,9 +111,10 @@ function publishNote(note) {
     .catch((err) => console.error("Unable to publish the new note:", err));
 }
 
-if(!isScriptLoaded) {
-    createSelector();
+const node = createSelector();
+
+window.addEventListener('DOMContentLoaded', () => {
+	document.body.appendChild(node);
     setInterval(checkIfSelectorChanged, 1000); // 1s
     setInterval(forceStatus, 15*1000); // 15s
-    isScriptLoaded = true;
-}
+}, { once: true });
