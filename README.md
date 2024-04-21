@@ -1,5 +1,7 @@
-# Fuk u teams
+# Fuk u teams 2.0
 Tampermonkey script to force and keep an availability status in ms Teams (web version only)
+
+> Script working with teams 1.0 on branch [teams-v1](https://github.com/Bnz-0/fuk-u-teams/tree/teams-v1)
 
 ![](busy.png)
 
@@ -18,13 +20,13 @@ This script try to fix this problem letting you set the status and avoid automat
 To customize the statuses you have to modify this map inside the code:
 ```js
 const statusMap = {
-    "Script Off": {"availability":"", "note": ""},
-    "Available": {"availability":"Available", "note": ""},
-    "Busy": {"availability":"Busy", "note": ""},
-    "DoNotDisturb": {"availability":"DoNotDisturb", "note": ""},
-    "BeRightBack": {"availability":"BeRightBack", "note": ""},
-    "Away": {"availability":"Away", "note": ""},
-    "Offline": {"availability":"Offline", "note": ""}
+    "Script Off": { "status": RESET },
+    "Available": { "status": AVAILABLE },
+    "Busy": { "status": BUSY },
+    "DoNotDisturb": { "status": DO_NOT_DISTURB },
+    "BeRightBack": { "status": BE_RIGHT_BACK },
+    "Away": { "status": AWAY },
+    "Offline": { "status": OFFLINE }
 };
 ```
 By default it contains all the Teams's statuses, but you can add other by simply specifying the `"availability"` and a `"note"`.
@@ -33,8 +35,8 @@ To show you an example, in my daily work I added those two custom status with so
 ```js
 const statusMap = {
      // ...
-    "Pausetta": {"availability":"BeRightBack", "note": "Pausetta caffè"},
-    "Pranzo": {"availability":"Away", "note": pinned("Són anæto a mangiâ")}
+    "Pausetta": {"availability": BE_RIGHT_BACK, "note": "Pausetta caffè"},
+    "Pranzo": {"availability": AWAY, "note": pinned("Són anæto a mangiâ")}
 };
 ```
 
