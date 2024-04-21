@@ -30,9 +30,9 @@ const statusMap = {
 };
 
 function getAuthToken() {
-    for(const i in localStorage) {
-        if(i.startsWith("ts.") && i.endsWith("cache.token.https://presence.teams.microsoft.com/")) {
-            return JSON.parse(localStorage[i]).token;
+    for (const i in localStorage) {
+        if (i.indexOf("https://presence.teams.microsoft.com//.default") >= 0) {
+            return JSON.parse(localStorage[i]).secret;
         }
     }
 }
