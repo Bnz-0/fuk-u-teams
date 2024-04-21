@@ -1,4 +1,4 @@
-# Fuk u teams
+# Fuk u teams 1.0
 Tampermonkey script to force and keep an availability status in ms Teams (web version only)
 
 ![](busy.png)
