@@ -8,8 +8,9 @@
 // @author      Bnz-0, tetroxid (https://www.reddit.com/user/tetroxid/)
 // ==/UserScript==
 
+
 const selectorId = "FUK_U_TEAMS_SELECTOR";
-let forcedAvailability = "";
+let forcedStatus = "Script Off"; // name from the statusMap
 let isScriptLoaded = false;
 let dompurify_policy; // trusted-types policy usable to create the selector
 
@@ -19,15 +20,24 @@ function pinned(s) {
     return s + "<pinnednote></pinnednote>"
 }
 
+const RESET = "";
+const AVAILABLE = { "availability": "Available" };
+const BUSY = { "availability": "Busy" };
+const DO_NOT_DISTURB = { "availability": "DoNotDisturb" };
+const BE_RIGHT_BACK = { "availability": "BeRightBack" };
+const AWAY = { "availability": "Away" };
+const OFFLINE = { "availability": "Offline", "activity": "OffWork" };
+
 const statusMap = {
-    "Script Off": {"availability":"", "note": ""},
-    "Available": {"availability":"Available", "note": ""},
-    "Busy": {"availability":"Busy", "note": ""},
-    "DoNotDisturb": {"availability":"DoNotDisturb", "note": ""},
-    "BeRightBack": {"availability":"BeRightBack", "note": ""},
-    "Away": {"availability":"Away", "note": ""},
-    "Offline": {"availability":"Offline", "note": ""}
+    "Script Off": { "status": RESET },
+    "Available": { "status": AVAILABLE },
+    "Busy": { "status": BUSY },
+    "DoNotDisturb": { "status": DO_NOT_DISTURB },
+    "BeRightBack": { "status": BE_RIGHT_BACK },
+    "Away": { "status": AWAY },
+    "Offline": { "status": OFFLINE }
 };
+
 
 function getAuthToken() {
     for (const i in localStorage) {
@@ -37,46 +47,52 @@ function getAuthToken() {
     }
 }
 
-function forceStatus() {
-    if(!forcedAvailability) return;
-    console.log(`fuk u teams, I'm ${forcedAvailability}`);
+function setStatus(status) {
+    status = status ? JSON.stringify(status) : undefined;
     fetch("https://presence.teams.microsoft.com/v1/me/forceavailability/", {
         "headers": {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${getAuthToken()}`
         },
-        "body": `{"availability":"${forcedAvailability}"}`,
+        "body": status,
         "method": "PUT"
     })
-    .then((resp) => console.log(`(forceStatus) Got fuked: ${resp.status}`))
-    .catch((err) => console.error("Unable to set the new status:", err));
+        .catch((err) => console.error("[fuk-u-teams] Unable to set the new status:", err));
 }
 
-function resetStatus() {
-    console.log(`reset status`);
-    fetch("https://presence.teams.microsoft.com/v1/me/forceavailability/", {
+function publishNote(note) {
+    fetch("https://presence.teams.microsoft.com/v1/me/publishnote", {
         "headers": {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${getAuthToken()}`
         },
+        "body": `{"message": "${note}", "expiry": "9999-12-30T23:00:00.000Z"}`,
         "method": "PUT"
     })
-    .then((resp) => console.log(`(resetStatus): ${resp.status}`))
-    .catch((err) => console.error("Unable to reset the status:", err));
+        .catch((err) => console.error("[fuk-u-teams] Unable to publish the new note:", err));
+}
+
+function forceStatus() {
+    let selected_status = statusMap[forcedStatus];
+    if (selected_status && selected_status.status != RESET) {
+        setStatus(selected_status.status);
+    }
 }
 
 function checkIfSelectorChanged() {
     // the teams security policy do not permit the usage of custom code in "onchange" event
     let node = document.getElementById(selectorId);
-    let newStatus = statusMap[node.value];
-    if(newStatus && newStatus.availability != forcedAvailability) {
-        publishNote(newStatus.note);
-        forcedAvailability = newStatus.availability;
-        if(forcedAvailability) {
-            forceStatus();
-        } else {
-            resetStatus();
+    let newStatus = node.value;
+    if (newStatus != forcedStatus) {
+        let old_status = statusMap[forcedStatus];
+        let selected_status = statusMap[newStatus];
+        if (selected_status.status.availability != old_status.status.availability) {
+            setStatus(selected_status.status);
         }
+        if (selected_status.note != old_status.note) {
+            publishNote(selected_status.note || "");
+        }
+        forcedStatus = newStatus;
     }
 }
 
@@ -88,7 +104,7 @@ function createSelector() {
     node.style.zIndex = '999999';
 
     let options = "";
-    for(let status in statusMap){
+    for (let status in statusMap) {
         options += `<option value="${status}">${status}</option>`;
     }
     node.innerHTML = dompurify_policy.createHTML(`
@@ -98,19 +114,6 @@ function createSelector() {
     return node;
 }
 
-function publishNote(note) {
-    console.log(`fuk u teams, tells the others "${note}"`);
-    fetch("https://presence.teams.microsoft.com/v1/me/publishnote", {
-        "headers": {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${getAuthToken()}`
-        },
-        "body": `{"message": "${note}", "expiry": "9999-12-30T23:00:00.000Z"}`,
-        "method": "PUT"
-    })
-    .then((resp) => console.log(`(publishNote) Got fuked: ${resp.status}`))
-    .catch((err) => console.error("Unable to publish the new note:", err));
-}
 
 // catch the dompurify policy to reuse it to create the selector
 {
