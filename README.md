@@ -35,8 +35,8 @@ To show you an example, in my daily work I added those two custom status with so
 ```js
 const statusMap = {
      // ...
-    "Pausetta": {"availability": BE_RIGHT_BACK, "note": "Pausetta caffè"},
-    "Pranzo": {"availability": AWAY, "note": pinned("Són anæto a mangiâ")}
+    "Pausetta": {"status": BE_RIGHT_BACK, "note": "Pausetta caffè"},
+    "Pranzo": {"status": AWAY, "note": pinned("Són anæto a mangiâ")}
 };
 ```
 
