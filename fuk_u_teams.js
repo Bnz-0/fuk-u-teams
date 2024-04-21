@@ -120,15 +120,23 @@ function createSelector() {
     const createPolicy = trustedTypes['createPolicy'];
     trustedTypes['createPolicy'] = function ovr(name, opts) {
         const p = createPolicy.call(trustedTypes, name, opts);
-        if (name == '@msteams/frameworks-loader#dompurify') {
+        if (name == 'dompurify') {
             dompurify_policy = p;
         }
         return p;
     };
 }
 
+function init() {
+	if(dompurify_policy) {
+	    document.body.appendChild(createSelector());
+	    setInterval(checkIfSelectorChanged, 1000); // 1s
+	    setInterval(forceStatus, 15 * 1000); // 15s
+	} else {
+		setTimeout(init, 1000);
+	}
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-    document.body.appendChild(createSelector());
-    setInterval(checkIfSelectorChanged, 1000); // 1s
-    setInterval(forceStatus, 15 * 1000); // 15s
+	init();
 }, { once: true });
