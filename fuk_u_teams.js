@@ -11,6 +11,7 @@
 const selectorId = "FUK_U_TEAMS_SELECTOR";
 let forcedAvailability = "";
 let isScriptLoaded = false;
+let dompurify_policy; // trusted-types policy usable to create the selector
 
 
 // Show the note when people message you
@@ -90,10 +91,10 @@ function createSelector() {
     for(let status in statusMap){
         options += `<option value="${status}">${status}</option>`;
     }
-    node.innerHTML = `
+    node.innerHTML = dompurify_policy.createHTML(`
     <select id="${selectorId}" style="color: black;">
         ${options}
-    </select>`;
+    </select>`);
     return node;
 }
 
@@ -111,10 +112,20 @@ function publishNote(note) {
     .catch((err) => console.error("Unable to publish the new note:", err));
 }
 
-const node = createSelector();
+// catch the dompurify policy to reuse it to create the selector
+{
+    const createPolicy = trustedTypes['createPolicy'];
+    trustedTypes['createPolicy'] = function ovr(name, opts) {
+        const p = createPolicy.call(trustedTypes, name, opts);
+        if (name == '@msteams/frameworks-loader#dompurify') {
+            dompurify_policy = p;
+        }
+        return p;
+    };
+}
 
 window.addEventListener('DOMContentLoaded', () => {
-	document.body.appendChild(node);
+    document.body.appendChild(createSelector());
     setInterval(checkIfSelectorChanged, 1000); // 1s
-    setInterval(forceStatus, 15*1000); // 15s
+    setInterval(forceStatus, 15 * 1000); // 15s
 }, { once: true });
