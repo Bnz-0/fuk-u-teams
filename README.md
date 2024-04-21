@@ -29,7 +29,7 @@ const statusMap = {
     "Offline": { "status": OFFLINE }
 };
 ```
-By default it contains all the Teams's statuses, but you can add other by simply specifying the `"availability"` and a `"note"`.
+By default it contains all the Teams's statuses, but you can add other by simply specifying the `"status"` and a `"note"`.
 
 To show you an example, in my daily work I added those two custom status with some notes:
 ```js
