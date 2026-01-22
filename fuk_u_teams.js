@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name        fuk u teams
-// @version     3
+// @version     4
 // @description Script for keeping status perpetually in Web version of Teams
 // @run-at      document-start
 // @grant       none
 // @match       *://*.teams.microsoft.com/*
+// @match       *://*teams.microsoft.com.mcas.ms/*
 // @author      Bnz-0, tetroxid (https://www.reddit.com/user/tetroxid/)
 // ==/UserScript==
 
