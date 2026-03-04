@@ -5,6 +5,7 @@
 // @run-at      document-start
 // @grant       none
 // @match       *://*.teams.microsoft.com/*
+// @match       *://*.teams.cloud.microsoft/*
 // @match       *://*teams.microsoft.com.mcas.ms/*
 // @author      Bnz-0, tetroxid (https://www.reddit.com/user/tetroxid/)
 // ==/UserScript==
